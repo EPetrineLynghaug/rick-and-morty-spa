@@ -61,6 +61,34 @@
   font-family: Roboto, sans-serif;
 }
 
+.A71umG_loadMore {
+  color: #000;
+  cursor: pointer;
+  background-color: #61dafb;
+  border: none;
+  border-radius: 5px;
+  margin: 1rem auto;
+  padding: .75rem 1.5rem;
+  font-size: 1rem;
+  transition: background-color .3s;
+  display: block;
+}
+
+.A71umG_loadMore:hover {
+  background-color: #21a1f1;
+}
+
+.A71umG_searchInput {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
+  padding: .5rem;
+  font-size: 1rem;
+  display: block;
+}
+
 .QIqopW_details {
   text-align: center;
   padding: 2rem;

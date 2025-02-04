@@ -27903,6 +27903,7 @@ var prevRefreshSig = window.$RefreshSig$;
 $parcel$ReactRefreshHelpers$cbcd.prelude(module);
 
 try {
+// Import necessary React hooks and components
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
@@ -27913,22 +27914,101 @@ var _charactersModuleCssDefault = parcelHelpers.interopDefault(_charactersModule
 var _s = $RefreshSig$();
 function Characters() {
     _s();
-    const [characters, setCharacters] = (0, _react.useState)([]);
+    // State to hold all fetched characters from the API
+    const [allCharacters, setAllCharacters] = (0, _react.useState)([]);
+    // State to manage characters currently visible on the page
+    const [visibleCharacters, setVisibleCharacters] = (0, _react.useState)([]);
+    // Track the current page for pagination
+    const [currentPage, setCurrentPage] = (0, _react.useState)(1);
+    // Loading state to show a loader while fetching data
+    const [loading, setLoading] = (0, _react.useState)(false);
+    // State to track the search input value
+    const [searchQuery, setSearchQuery] = (0, _react.useState)("");
+    // Number of characters to display per page
+    const charactersPerPage = 12;
+    // Function to fetch all characters from the API (handles pagination on the API)
+    const fetchAllCharacters = async ()=>{
+        setLoading(true); // Set loading state to true when data fetching starts
+        try {
+            let allData = []; // To store all fetched characters
+            let page = 1; // Start fetching from page 1
+            let hasMore = true; // Flag to check if more pages are available
+            // Loop to fetch characters page by page until there's no next page
+            while(hasMore){
+                const response = await fetch(`https://rickandmortyapi.com/api/character?page=${page}`);
+                const data = await response.json();
+                // Add newly fetched characters to the existing list
+                allData = [
+                    ...allData,
+                    ...data.results
+                ];
+                // Check if there is another page of data
+                hasMore = data.info.next !== null;
+                page++; // Move to the next page
+            }
+            // Set the complete list of characters in the state
+            setAllCharacters(allData);
+            // Display the first set of characters based on charactersPerPage
+            setVisibleCharacters(allData.slice(0, charactersPerPage));
+        } catch (error) {
+            console.error("Error fetching characters:", error); // Handle fetch errors
+        } finally{
+            setLoading(false); // Stop loading once fetching is done
+        }
+    };
+    // useEffect to trigger data fetching when the component mounts
     (0, _react.useEffect)(()=>{
-        fetch("https://rickandmortyapi.com/api/character").then((response)=>response.json()).then((data)=>setCharacters(data.results));
+        fetchAllCharacters();
     }, []);
+    // Function to handle the "Load More" button click
+    const handleLoadMore = ()=>{
+        const nextPage = currentPage + 1; // Move to the next page
+        const startIndex = (nextPage - 1) * charactersPerPage; // Calculate start index for new characters
+        const endIndex = startIndex + charactersPerPage; // Calculate end index
+        // Append new characters to the current list of visible characters
+        setVisibleCharacters((prev)=>[
+                ...prev,
+                ...allCharacters.slice(startIndex, endIndex)
+            ]);
+        setCurrentPage(nextPage); // Update the current page
+    };
+    // Function to handle search input changes
+    const handleSearch = (event)=>{
+        const query = event.target.value.toLowerCase(); // Convert search input to lowercase for case-insensitive search
+        setSearchQuery(query); // Update search query state
+        if (query === "") {
+            // Reset to the first page if search input is cleared
+            setVisibleCharacters(allCharacters.slice(0, charactersPerPage));
+            setCurrentPage(1);
+        } else {
+            // Filter characters based on the search query
+            const filteredCharacters = allCharacters.filter((character)=>character.name.toLowerCase().includes(query));
+            setVisibleCharacters(filteredCharacters); // Update visible characters with search results
+        }
+    };
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
         className: (0, _charactersModuleCssDefault.default).characters,
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h1", {
-                children: "Characters"
+                children: "Characters of Rick and Morty"
             }, void 0, false, {
                 fileName: "src/pages/Characteters/Characters.js",
-                lineNumber: 16,
+                lineNumber: 92,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
+                type: "text",
+                placeholder: "Search characters...",
+                value: searchQuery,
+                onChange: handleSearch,
+                className: (0, _charactersModuleCssDefault.default).searchInput
+            }, void 0, false, {
+                fileName: "src/pages/Characteters/Characters.js",
+                lineNumber: 95,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("ul", {
-                children: characters.map((character)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
+                children: visibleCharacters.map((character)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("li", {
                         className: (0, _charactersModuleCssDefault.default).card,
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _reactRouter.Link), {
                             to: `/characters/${character.id}`,
@@ -27938,40 +28018,63 @@ function Characters() {
                                     alt: character.name
                                 }, void 0, false, {
                                     fileName: "src/pages/Characteters/Characters.js",
-                                    lineNumber: 21,
+                                    lineNumber: 108,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("h2", {
                                     children: character.name
                                 }, void 0, false, {
                                     fileName: "src/pages/Characteters/Characters.js",
-                                    lineNumber: 22,
+                                    lineNumber: 109,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/pages/Characteters/Characters.js",
-                            lineNumber: 20,
+                            lineNumber: 107,
                             columnNumber: 13
                         }, this)
                     }, character.id, false, {
                         fileName: "src/pages/Characteters/Characters.js",
-                        lineNumber: 19,
+                        lineNumber: 106,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "src/pages/Characteters/Characters.js",
-                lineNumber: 17,
+                lineNumber: 104,
                 columnNumber: 7
+            }, this),
+            loading && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                children: "Loading all characters..."
+            }, void 0, false, {
+                fileName: "src/pages/Characteters/Characters.js",
+                lineNumber: 116,
+                columnNumber: 19
+            }, this),
+            !loading && visibleCharacters.length === 0 && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                children: "No characters found."
+            }, void 0, false, {
+                fileName: "src/pages/Characteters/Characters.js",
+                lineNumber: 120,
+                columnNumber: 9
+            }, this),
+            !loading && visibleCharacters.length < allCharacters.length && searchQuery === "" && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                onClick: handleLoadMore,
+                className: (0, _charactersModuleCssDefault.default).loadMore,
+                children: "Load More"
+            }, void 0, false, {
+                fileName: "src/pages/Characteters/Characters.js",
+                lineNumber: 127,
+                columnNumber: 11
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/pages/Characteters/Characters.js",
-        lineNumber: 15,
+        lineNumber: 91,
         columnNumber: 5
     }, this);
 }
-_s(Characters, "Lpb9AbqKJ07+xuj4aZ1twNw87e0=");
+_s(Characters, "XR+JvAY8blmMRrpJgmStyrHvwWg=");
 _c = Characters;
 exports.default = Characters;
 var _c;
@@ -27985,6 +28088,8 @@ $RefreshReg$(_c, "Characters");
 },{"react/jsx-dev-runtime":"iTorj","react":"21dqq","react-router":"dXVwI","./Characters.module.css":"erRez","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"erRez":[function(require,module,exports,__globalThis) {
 module.exports["card"] = `A71umG_card`;
 module.exports["characters"] = `A71umG_characters`;
+module.exports["loadMore"] = `A71umG_loadMore`;
+module.exports["searchInput"] = `A71umG_searchInput`;
 
 },{}],"hLl4t":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$0014 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
