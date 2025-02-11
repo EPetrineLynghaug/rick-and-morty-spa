@@ -142,3 +142,337 @@ Client-Side Routing:
 
 **Production:**
 -  Remember to minify and optimize your CSS and JS files for production to ensure optimal performance.
+
+
+# Lecture Notes: userState and UseEffect
+
+
+
+## React Hooks Overview 
+<details> <summary><strong>Click to read more</strong></summary>
+
+
+React Hooks provide a way to manage state and side effects in functional components. Below is a brief introduction and examples of the most commonly used hooks:  
+- **useState**  
+- **useEffect**  
+- **useReducer**  
+- **useContext**  
+
+These hooks help you store and update data (state) at different points in your application while keeping your code simpler and more organized compared to older class-based components.
+
+</details>
+
+## Table of Contents
+<details> <summary><strong>Click to read more</strong></summary>
+
+1. [Key Hooks and Their Purpose](#key-hooks-and-their-purpose)  
+2. [useState](#usestate)  
+3. [useEffect](#useeffect)  
+4. [useReducer](#usereducer)  
+5. [useContext](#usecontext)  
+6. [Additional Notes](#additional-notes)
+
+
+</details>
+
+## ## Key Hooks and Their Purpose
+<details> <summary><strong>Click to read more</strong></summary>
+ **Hook**       | **Purpose**                       | **Best For**                                       |
+|----------------|-----------------------------------|----------------------------------------------------|
+| **useState**   | Manages local state               | Simple state updates                               |
+| **useEffect**  | Handles side effects              | Fetching data, subscriptions, updating the DOM, etc.  |
+| **useReducer** | Manages complex state transitions | Multiple actions, more advanced or structured updates |
+| **useContext** | Shares state across components    | Avoiding prop drilling, managing global state      |
+
+
+</details>
+
+## Querying Data
+<details> <summary><strong>Click to read more</strong></summary>
+
+</details>
+
+## useState
+<details> <summary><strong>Click to read more</strong></summary>
+
+### What It Does
+- **useState** lets you add React state to functional components.
+- You call it inside a component to create a piece of local state tied to that component’s lifecycle.
+
+### Basic Example
+```jsx
+import React, { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </div>
+  );
+}
+
+export default Counter;
+
+```
+- Here, count is the current state and setCount is the function that updates it.
+- Using an anonymous function in the onClick ensures setCount is only called when the button is clicked.
+
+### Updating State Correctly
+
+Sometimes, especially in loops or repeated state updates, you may want to use a callback form:
+```jsx
+setCount(prevCount => prevCount + 1);
+```
+This ensures you always get the latest state.
+
+### Objects and Arrays in useState
+
+- When using objects or arrays, use the spread operator (...) to create copies instead of mutating the original state directly:
+```jsx
+const [user, setUser] = useState({ name: "Lasse", age: 55 });
+
+// Correct way to update:
+setUser(prevUser => ({
+  ...prevUser,
+  age: prevUser.age + 1
+}));
+```
+- React expects state to be treated as immutable—always create a new copy instead of modifying the existing one.
+
+### Example with Arrays
+```jsx
+function TodoList() {
+  const [tasks, setTasks] = useState(["Learn React"]);
+
+  const addTask = () => {
+    setTasks(prevTasks => [...prevTasks, "New Task"]);
+  };
+
+  return (
+    <div>
+      <ul>
+        {tasks.map((task, index) => (
+          <li key={index}>{task}</li>
+        ))}
+      </ul>
+      <button onClick={addTask}>Add Task</button>
+    </div>
+  );
+}
+```
+- he new task is added to a new array using the spread operator.
+
+</details>
+
+
+## useEffect
+<details> <summary><strong>Click to read more</strong></summary>
+
+### What It Does
+
+- useEffect is for performing side effects in a React component:
+- Data fetching (e.g., from an API)
+- Subscribing or unsubscribing to events (e.g., window resize, WebSocket messages)
+- Updating the DOM manually
+-  Setting up or cleaning up intervals/timers
+
+### Basic Example (Data Fetching)
+```jsx
+import React, { useEffect, useState } from "react";
+
+function UsersList() {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/users")
+      .then(response => response.json())
+      .then(data => setUsers(data));
+  }, []); // The empty array means "run once on mount"
+
+  return (
+    <ul>
+      {users.map(user => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+
+export default UsersList;
+```
+- The second argument [] (dependency array) ensures the effect runs only once when the component mounts.
+
+### Cleanup (e.g., Event Listeners, Intervals)
+```jsx
+function WindowSize() {
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup function to remove the event listener
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return <p>Window width: {width}px</p>;
+}
+
+export default WindowSize;
+```
+-  Always clean up side effects to avoid memory leaks, especially with intervals or event listeners.
+
+### Common Pitfalls
+
+-  Missing the dependency array or incorrectly setting it can cause infinite loops.
+- Each time dependencies in the array change, the effect runs again.
+
+</details>
+
+
+## useReducer
+<details> <summary><strong>Click to read more</strong></summary>
+
+**What It Does**
+
+- useReducer is like a “more powerful useState” for complex state logic.
+- It’s particularly useful when you have multiple sub-values that need to be managed in one place or when state transitions follow specific patterns.
+
+**Example**
+```jsx
+import React, { useReducer } from "react";
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "increment":
+      return { count: state.count + 1 };
+    case "decrement":
+      return { count: state.count - 1 };
+    default:
+      return state;
+  }
+}
+
+function CounterWithReducer() {
+  const [state, dispatch] = useReducer(reducer, { count: 0 });
+
+  return (
+    <div>
+      <p>Count: {state.count}</p>
+      <button onClick={() => dispatch({ type: "increment" })}>
+        Increment
+      </button>
+      <button onClick={() => dispatch({ type: "decrement" })}>
+        Decrement
+      </button>
+    </div>
+  );
+}
+
+export default CounterWithReducer;
+```
+- A reducer function decides how to update the state based on an action.
+
+</details>
+
+## useContext
+<details> <summary><strong>Click to read more</strong></summary>
+
+**What It Does:**
+
+- useContext lets you share state or other data across multiple components without passing props down multiple levels.
+-  Useful for global data, like themes (light or dark mode) or user authentication info.
+
+**Basic Example**
+```jsx
+import React, { createContext, useContext, useState } from "react";
+
+const ThemeContext = createContext();
+
+function App() {
+  const [theme, setTheme] = useState("light");
+
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      <Toolbar />
+    </ThemeContext.Provider>
+  );
+}
+
+function Toolbar() {
+  return (
+    <div>
+      <ThemeButton />
+    </div>
+  );
+}
+
+function ThemeButton() {
+  const { theme, setTheme } = useContext(ThemeContext);
+
+  return (
+    <button
+      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      style={{
+        backgroundColor: theme === "light" ? "#FFF" : "#333",
+        color: theme === "light" ? "#000" : "#FFF"
+      }}
+    >
+      Toggle Theme
+    </button>
+  );
+}
+
+export default App;
+```
+- ThemeContext.Provider provides the value for any child component that calls useContext(ThemeContext).
+
+
+</details>
+
+## Additional Notes
+<details> <summary><strong>Click to read more</strong></summary>
+
+**Rendering and Virtual DOM**
+
+- React uses a virtual DOM. Whenever state changes, React determines the minimal set of changes required to update the UI.
+
+**Avoiding Infinite Loops with useEffect**
+
+- If you update state inside useEffect without a proper dependency array, you can cause a component to re-render indefinitely.
+- Be sure to include correct dependencies in the array or leave it empty if you only want the effect to run once.
+
+**Pagination Example (Brief Overview)**
+
+- You can use a combination of useState (for the current page) and useEffect (to fetch data for that page) to implement pagination.
+- Alternatively, fetch all data at once, store it in state, and slice the data to simulate pages locally.
+- Pros: Quick local transitions (no extra requests once the data is loaded).
+- Cons: Possibly large memory usage or long initial load if the dataset is huge.
+
+**Combining Hooks**
+
+- It’s common to use multiple useEffect hooks in a single component for different tasks (fetching data, setting up an event listener, etc.).
+- You can combine useState and useReducer in the same component if needed. They solve similar problems but at different scales of complexity.
+
+</details>
+
+## Summary
+<details> <summary><strong>Click to read more</strong></summary>
+eact Hooks such as useState, useEffect, useReducer, and useContext allow developers to manage state and side effects in functional components. These hooks simplify code organization and replace the need for most class components. By using them correctly, you can create clean, efficient, and easily testable React applications.
+
+- **useState:** Local state management (simple counters, toggles, forms).
+- **useEffect:** Side effects (fetching data, managing subscriptions, intervals).
+- **useReducer:** Complex state transitions with multiple actions.
+- **useContext:** Global or shared state across multiple components.
+
+Each hook addresses a specific need—together, they form a powerful toolkit for modern React development.
+
+</details>
+
